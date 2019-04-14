@@ -58,6 +58,7 @@ pub struct EncodeContext<'a, 'tcx: 'a> {
     source_file_cache: Lrc<SourceFile>,
 }
 
+#[derive(Default)]
 struct PerDefTables<'tcx> {
     kind: PerDefTable<Lazy<EntryKind<'tcx>>>,
     visibility: PerDefTable<Lazy<ty::Visibility>>,
@@ -1830,28 +1831,10 @@ pub fn encode_metadata<'a, 'tcx>(tcx: TyCtxt<'a, 'tcx, 'tcx>)
     // Since encoding metadata is not in a query, and nothing is cached,
     // there's no need to do dep-graph tracking for any of it.
     let (root, mut result) = tcx.dep_graph.with_ignore(move || {
-        let def_counts = tcx.hir().definitions().def_index_counts_lo_hi();
         let mut ecx = EncodeContext {
             opaque: encoder,
             tcx,
-            per_def: PerDefTables {
-                kind: PerDefTable::new(def_counts),
-                visibility: PerDefTable::new(def_counts),
-                span: PerDefTable::new(def_counts),
-                attributes: PerDefTable::new(def_counts),
-                children: PerDefTable::new(def_counts),
-                stability: PerDefTable::new(def_counts),
-                deprecation: PerDefTable::new(def_counts),
-
-                ty: PerDefTable::new(def_counts),
-                inherent_impls: PerDefTable::new(def_counts),
-                variances: PerDefTable::new(def_counts),
-                generics: PerDefTable::new(def_counts),
-                predicates: PerDefTable::new(def_counts),
-                predicates_defined_on: PerDefTable::new(def_counts),
-
-                mir: PerDefTable::new(def_counts),
-            },
+            per_def: Default::default(),
             lazy_state: LazyState::NoNode,
             type_shorthands: Default::default(),
             predicate_shorthands: Default::default(),
